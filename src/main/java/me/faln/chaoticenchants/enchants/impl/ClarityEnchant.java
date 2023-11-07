@@ -1,6 +1,7 @@
 package me.faln.chaoticenchants.enchants.impl;
 
 import me.faln.chaoticenchants.ChaoticEnchants;
+import me.faln.chaoticenchants.PassiveEvent;
 import me.faln.chaoticenchants.enchants.AbstractEnchant;
 import me.faln.chaoticenchants.registry.YMLConfig;
 import me.lucko.helper.Events;
@@ -15,7 +16,7 @@ import org.bukkit.potion.PotionEffectType;
 
 import javax.annotation.Nonnull;
 
-public final class ClarityEnchant extends AbstractEnchant {
+public final class ClarityEnchant extends AbstractEnchant implements PassiveEvent {
 
     private static final MetadataKey<Integer> CLARITY_KEY = MetadataKey.createIntegerKey("CLARITY");
 
@@ -26,14 +27,18 @@ public final class ClarityEnchant extends AbstractEnchant {
         super(plugin, config.section("clarity"));
     }
 
+    @Override
+    public MetadataKey<?> getKey() {
+        return ClarityEnchant.CLARITY_KEY;
+    }
 
     @Override
-    public void setup(@Nonnull final TerminableConsumer consumer) {
-        Events.subscribe(EntityDamageByEntityEvent.class)
-                .filter(e -> e.getDamager() instanceof Player)
-                .filter(e -> e.getEntity() instanceof Player)
-                .filter(EventFilters.entityHasMetadata(ClarityEnchant.CLARITY_KEY))
-                .handler(event -> ((Player) event.getEntity()).removePotionEffect(PotionEffectType.BLINDNESS))
-                .bindWith(consumer);
+    public void handle(final Player player) {
+        player.removePotionEffect(PotionEffectType.BLINDNESS);
+    }
+
+    @Override
+    public void setup(@Nonnull TerminableConsumer terminableConsumer) {
+
     }
 }

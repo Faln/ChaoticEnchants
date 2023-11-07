@@ -5,8 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.faln.chaoticenchants.ChaoticEnchants;
 import me.faln.chaoticenchants.utils.Color;
+import me.lucko.helper.metadata.Metadata;
+import me.lucko.helper.metadata.MetadataKey;
 import me.lucko.helper.terminable.module.TerminableModule;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 
 import java.util.List;
 import java.util.Set;
@@ -42,4 +46,6 @@ public abstract class AbstractEnchant implements TerminableModule {
 
         return levels;
     }
+
+    public abstract MetadataKey<?> getKey();
 }
