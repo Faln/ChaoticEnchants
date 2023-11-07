@@ -1,0 +1,24 @@
+clarity:
+  enabled: true
+  tier: COMMON
+  max-level: 5
+  name: '%rarity-color%Clarity'
+  description:
+    - '&7Automatically removes blindness'
+    - '&7applied to you if its level is'
+    - '&7lower than 5.'
+  applies-to:
+    - 'HELMETS'
+  levels:
+    0:
+      chance: 100
+    1:
+      chance: 100
+    2:
+      chance: 100
+    3:
+      chance: 100
+    4:
+      chance: 100
+
+

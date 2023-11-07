@@ -1,0 +1,3 @@
+name: ChaoticEnchants
+version: '${project.version}'
+main: me.faln.chaoticenchants.ChaoticEnchants
