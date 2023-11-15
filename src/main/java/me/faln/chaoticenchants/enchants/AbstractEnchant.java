@@ -4,36 +4,58 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import me.faln.chaoticenchants.ChaoticEnchants;
+import me.faln.chaoticenchants.rarity.Rarity;
 import me.faln.chaoticenchants.utils.Color;
+import me.faln.chaoticenchants.utils.EquipmentType;
 import me.lucko.helper.metadata.Metadata;
 import me.lucko.helper.metadata.MetadataKey;
-import me.lucko.helper.terminable.module.TerminableModule;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor(access = AccessLevel.PROTECTED) @Getter
-public abstract class AbstractEnchant implements TerminableModule {
+public abstract class AbstractEnchant implements ChaoticEnchant {
 
     protected final ChaoticEnchants plugin;
+    protected final MetadataKey<Integer> metadataKey;
+    protected final String id;
+
     protected final boolean enabled;
-    protected final int maxLevel;
-    protected final String rarity;
+    protected final Rarity rarity;
     protected final String displayName;
     protected final List<String> description;
     protected final double[] levels;
 
+    protected final Set<EquipmentType> applicableTypes;
+
     protected AbstractEnchant(final ChaoticEnchants plugin, final ConfigurationSection section) {
         this.plugin = plugin;
+        this.id = section.getName();
         this.enabled = section.getBoolean("enabled");
-        this.maxLevel = section.getInt("max-level");
-        this.rarity = section.getString("rarity");
+        this.rarity = this.plugin.getRarityRegistry().get(section.getString("rarity"));
         this.displayName = Color.colorize(section.getString("name"));
         this.description = Color.colorize(section.getStringList("description"));
         this.levels = this.parseLevels(section);
+        this.metadataKey = MetadataKey.createIntegerKey(this.id);
+        this.applicableTypes = this.parseApplicableTypes(section);
+    }
+
+    protected double getChanceFromLevel(final Player player) {
+        final int level = Metadata.provideForPlayer(player)
+                .get(this.metadataKey)
+                .orElseThrow(IllegalArgumentException::new);
+
+        return this.levels[level - 1];
+    }
+
+    private Set<EquipmentType> parseApplicableTypes(final ConfigurationSection section) {
+        return section.getStringList("applies-to").stream()
+                .map(EquipmentType::match)
+                .collect(Collectors.toSet());
     }
 
     private double[] parseLevels(final ConfigurationSection section) {
@@ -41,11 +63,29 @@ public abstract class AbstractEnchant implements TerminableModule {
         final double[] levels = new double[keys.size()];
 
         for (final String level : keys) {
-            levels[Integer.parseInt(level) - 1] = section.getDouble("levels." + level + ".chance");
+            levels[Integer.parseInt(level)] = section.getDouble("levels." + level + ".chance");
         }
 
         return levels;
     }
 
-    public abstract MetadataKey<?> getKey();
+    @Override
+    public int getMaxLevel() {
+        return this.levels.length;
+    }
+
+    @Override
+    public List<String> getDescription() {
+        return new ArrayList<>(this.description);
+    }
+
+    @Override
+    public void activate(final Player player, final int enchantLevel) {
+        Metadata.provideForPlayer(player).put(this.metadataKey, enchantLevel);
+    }
+
+    @Override
+    public void deactivate(final Player player) {
+        Metadata.provideForPlayer(player).remove(this.metadataKey);
+    }
 }

@@ -1,0 +1,64 @@
+size: 6
+title: '&8Select Amount'
+filler:
+  slots: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53]
+  material: BLACK_STAINED_GLASS_PANE
+  name: ''
+  lore: []
+  custom-model-data: 0
+
+item:
+  slot: 22
+
+confirm:
+  material: BOOK
+  custom-model-data: 0
+  slot: 40
+  name: '&aPurchase %amount%x %item% &afor &e%exp% XP'
+  lore: []
+
+remove:
+  21:
+    material: RED_STAINED_GLASS_PANE
+    custom-model-data: 0
+    amount: 1
+    remove: 1
+    name: '&c-1'
+    lore: []
+  20:
+    material: RED_STAINED_GLASS_PANE
+    custom-model-data: 0
+    amount: 8
+    remove: 8
+    name: '&c-8'
+    lore: []
+  19:
+    material: RED_STAINED_GLASS_PANE
+    custom-model-data: 0
+    amount: 16
+    remove: 16
+    name: '&c-16'
+    lore: []
+
+add:
+  23:
+    material: LIME_STAINED_GLASS_PANE
+    custom-model-data: 0
+    amount: 1
+    add: 1
+    name: '&a+1'
+    lore: []
+  24:
+    material: LIME_STAINED_GLASS_PANE
+    custom-model-data: 0
+    amount: 8
+    add: 8
+    name: '&a+8'
+    lore: []
+  25:
+    material: LIME_STAINED_GLASS_PANE
+    custom-model-data: 0
+    amount: 16
+    add: 16
+    name: '&a+16'
+    lore: []

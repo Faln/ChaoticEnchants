@@ -1,0 +1,20 @@
+lucky-gem:
+  name: '&a&lLucky Gem'
+  custom-model-data: 0
+  material: DIAMOND
+  lore:
+    - '&7Increases the success chances'
+    - '&7of runes depending on their rarity.'
+    - ''
+    - '&fRune''s Tier:'
+    - ' &7* &f&lCOMMON&7: &a+&f15%'
+    - ' &7* &5&lRARE&7: &a+&f10%'
+    - ' &7* &6&lLEGENDARY&7: &a+&f3%'
+    - ' &7* &4&lMYTHICAL&7: &a+&f2%'
+    - ''
+  cost: 10000
+  tiers:
+    COMMON: 15
+    RARE: 10
+    LEGENDARY: 3
+    MYTHICAL: 2

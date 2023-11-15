@@ -1,24 +1,17 @@
 package me.faln.chaoticenchants.enchants.impl;
 
+import lombok.NonNull;
 import me.faln.chaoticenchants.ChaoticEnchants;
-import me.faln.chaoticenchants.PassiveEvent;
 import me.faln.chaoticenchants.enchants.AbstractEnchant;
-import me.faln.chaoticenchants.registry.YMLConfig;
+import me.faln.chaoticenchants.files.config.YMLConfig;
 import me.lucko.helper.Events;
-import me.lucko.helper.Schedulers;
-import me.lucko.helper.event.filter.EventFilters;
 import me.lucko.helper.metadata.Metadata;
-import me.lucko.helper.metadata.MetadataKey;
 import me.lucko.helper.terminable.TerminableConsumer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.potion.PotionEffectType;
 
-import javax.annotation.Nonnull;
-
-public final class ClarityEnchant extends AbstractEnchant implements PassiveEvent {
-
-    private static final MetadataKey<Integer> CLARITY_KEY = MetadataKey.createIntegerKey("CLARITY");
+public final class ClarityEnchant extends AbstractEnchant {
 
     public ClarityEnchant(
             final ChaoticEnchants plugin,
@@ -28,17 +21,12 @@ public final class ClarityEnchant extends AbstractEnchant implements PassiveEven
     }
 
     @Override
-    public MetadataKey<?> getKey() {
-        return ClarityEnchant.CLARITY_KEY;
-    }
-
-    @Override
-    public void handle(final Player player) {
-        player.removePotionEffect(PotionEffectType.BLINDNESS);
-    }
-
-    @Override
-    public void setup(@Nonnull TerminableConsumer terminableConsumer) {
-
+    public void setup(@NonNull final TerminableConsumer consumer) {
+        Events.subscribe(EntityPotionEffectEvent.class)
+                .filter(event -> event.getEntity() instanceof Player)
+                .filter(event -> event.getModifiedType().equals(PotionEffectType.BLINDNESS))
+                .filter(event -> Metadata.provideForPlayer(event.getEntity().getUniqueId()).has(this.metadataKey))
+                .handler(event -> event.setCancelled(true))
+                .bindWith(consumer);
     }
 }

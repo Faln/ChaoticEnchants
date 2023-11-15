@@ -1,3 +1,4 @@
 name: ChaoticEnchants
 version: '${project.version}'
 main: me.faln.chaoticenchants.ChaoticEnchants
+api-version: 1.13

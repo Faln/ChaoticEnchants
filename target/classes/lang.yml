@@ -1,0 +1,28 @@
+cannot-enchant-stacked-items:
+  - '&c&l[!] &cYou cannot enchant a stack of items.'
+item-not-applicable:
+  - '&c&l[!] &cThis item cannot be enchanted by this Rune.'
+item-already-maxed:
+  - '&c&l[!] &cThis item already has the maxed level of this enchant.'
+item-already-has-higher-level:
+  - '&c&l[!] &cThis item already has a higher level of this enchant.'
+not-enough-exp:
+  - '&c&l[!] &cYou do not have enough exp.'
+enchant-uncovered:
+  - '&a&l[!] &aYou have uncovered a %enchant%&a rune.'
+inventory-full:
+  - '&c&l[!] &cYour inventory is full!'
+destroyed:
+  - '&4&l[!] &4The rune has &ncritically&4 failed! Your rune and item has been destroyed.'
+failed:
+  - '&4&l[!] &4The rune has failed! Your rune has been destroyed.'
+success:
+  - '&a&l[!] &aYou have successfully applied %enchant%&a.'
+incinerate-rune:
+  - '&a&l[!] &aYou have incinerated %rune% &afor &e%exp% XP&a.'
+incinerate-all:
+  - '&a&l[!] &aYou have incinerate everything for &e%exp% XP&a.'
+lucky-gem-applied:
+  - '&a&l[!] &aYou have successfully applied a &lLucky Gem&a to %enchant%&a.'
+item-purchase:
+  - '&a&l[!] &aYou have purchased %amount%x %item% &afor &e%exp% XP'
