@@ -1,16 +1,20 @@
 package me.faln.chaoticenchants.menus;
 
 import me.faln.chaoticenchants.ChaoticEnchants;
+import me.faln.chaoticenchants.enchants.ChaoticEnchant;
 import me.faln.chaoticenchants.files.config.YMLConfig;
+import me.faln.chaoticenchants.items.CleansingWand;
 import me.faln.chaoticenchants.items.LuckyGem;
 import me.faln.chaoticenchants.rarity.Rarity;
 import me.faln.chaoticenchants.utils.NumberUtils;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 public final class InfuserMenu extends Gui {
@@ -44,6 +48,24 @@ public final class InfuserMenu extends Gui {
                 })
         );
 
+        this.setItem(this.config.parseInt("cleansing-wand.slot"), this.config.getItemstack("cleansing-wand")
+                .buildConsumer(ClickType.LEFT, event -> {
+                    final CleansingWand wand = this.plugin.getCleansingWand();
+
+                    if (wand.getItem() == null) {
+                        Bukkit.getLogger().warning("null wand");
+                    }
+
+                    new AmountSelectorMenu(
+                            this.plugin,
+                            super.getPlayer(),
+                            wand.getItem(),
+                            wand.getCost(),
+                            this.plugin.getFilesRegistry().get("amount-selector-menu")
+                    ).open();
+                })
+        );
+
         this.setItem(this.config.parseInt("incinerator.slot"), ItemStackBuilder.of(this.config.material("incinerator.material"))
                 .name(this.config.coloredString("incinerator.name"))
                 .lore(this.config.coloredList("incinerator.lore"))
@@ -64,12 +86,21 @@ public final class InfuserMenu extends Gui {
             this.setItem(this.config.parseInt(path + "slot"), ItemStackBuilder.of(this.config.material(path + "material"))
                     .name(this.config.coloredString(path + "name"))
                     .model(this.config.parseInt(path + "custom-model-data"))
-                    .lore(this.config.list(path + ".lore").stream()
+                    .lore(this.config.list(path + "lore").stream()
                             .map(s -> s.replace("%cost%", NumberUtils.formatExp(rarity.getCost())))
                             .map(s -> s.replace("%exp%", NumberUtils.formatExp(super.getPlayer())))
                             .collect(Collectors.toList())
                     ).buildConsumer(event -> {
-                        this.redraw();
+                        final List<ChaoticEnchant> enchants = this.plugin.getEnchantRegistry().values().stream()
+                                .filter(enchant -> enchant.getRarity().getId().equals(rarity.getId()))
+                                .collect(Collectors.toList());
+
+                        new EnchantListMenu(
+                                this.plugin,
+                                super.getPlayer(),
+                                this.matchSize(enchants),
+                                enchants
+                        ).open();
                     }, event -> {
                         final Player player = super.getPlayer();
                         final int cost = rarity.getCost();
@@ -84,6 +115,26 @@ public final class InfuserMenu extends Gui {
                         ).open();
                     })
             );
+        }
+    }
+
+    private int matchSize(final List<?> list) {
+        int size = list.size();
+
+        if (size <= 9) {
+            return 1;
+        } else if (size <= 18) {
+            return 2;
+        } else if (size <= 27) {
+            return 3;
+        } else if (size <= 36) {
+            return 4;
+        } else if (size <= 45) {
+            return 5;
+        } else if (size <= 54) {
+            return 6;
+        } else {
+            throw new IllegalArgumentException("List exceeded size");
         }
     }
 }

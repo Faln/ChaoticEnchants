@@ -14,6 +14,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("all")
@@ -61,25 +62,25 @@ public final class IncineratorMenu extends Gui {
                 .filter(Objects::nonNull)
                 .filter(itemStack -> NBT.readNbt(itemStack).hasTag("incinerate-amount"))
                 .collect(Collectors.toSet());
-        final int totalXP = runes.stream()
+        final AtomicInteger totalXP = new AtomicInteger(runes.stream()
                 .mapToInt(item -> NBT.readNbt(item).getInteger("incinerate-amount") * item.getAmount())
-                .sum();
+                .sum());
 
         this.setItems(this.config.intList("incinerate-all.slot"), ItemStackBuilder.of(this.config.material("incinerate-all.material"))
                 .name(this.config.coloredString("incinerate-all.name"))
                 .lore(this.config.coloredList("incinerate-all.lore").stream()
-                        .map(s -> s.replace("%exp%", String.valueOf(totalXP)))
+                        .map(s -> s.replace("%exp%", String.valueOf(totalXP.get())))
                         .collect(Collectors.toList()))
                 .model(this.config.parseInt("incinerate-all.custom-model-data"))
                 .buildConsumer(ClickType.LEFT, event -> {
 
-                    if (totalXP == 0) {
+                    if (totalXP.get() == 0) {
                         return;
                     }
 
-                    player.setTotalExperience(player.getTotalExperience() + totalXP);
+                    player.setTotalExperience(player.getTotalExperience() + totalXP.get());
                     this.plugin.getLangManager().send(player, "incinerate-all", new Replacer()
-                            .add("%exp%", NumberUtils.formatExp(totalXP))
+                            .add("%exp%", NumberUtils.formatExp(totalXP.get()))
                     );
 
                     runes.forEach(itemStack -> player.getInventory().remove(itemStack));
@@ -103,6 +104,7 @@ public final class IncineratorMenu extends Gui {
                             final int exp = NBT.readNbt(item).getInteger("incinerate-amount") * item.getAmount();
                             final Player p = super.getPlayer();
 
+                            totalXP.addAndGet(-exp);
                             p.getInventory().remove(item);
                             p.setTotalExperience(p.getTotalExperience() + exp);
                             this.plugin.getLangManager().send(p, "incinerate-rune", new Replacer()
@@ -113,6 +115,7 @@ public final class IncineratorMenu extends Gui {
                             this.setItem(slot, ItemStackBuilder.of(Material.AIR)
                                     .buildItem()
                                     .build());
+                            this.redraw();
                         }).build()
                 );
             } catch (IndexOutOfBoundsException e) {

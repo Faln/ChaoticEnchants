@@ -8,6 +8,11 @@ import java.util.concurrent.ThreadLocalRandom;
 public final class ChanceUtils {
 
     public static boolean parse(final double chance) {
+
+        if (chance == 100.0) {
+            return true;
+        }
+
         if (chance <= 0.0 || chance > 100.0) {
             return false;
         }

@@ -6,9 +6,11 @@ import lombok.AllArgsConstructor;
 import me.faln.chaoticenchants.ChaoticEnchants;
 import me.faln.chaoticenchants.enchants.ChaoticEnchant;
 import me.faln.chaoticenchants.enchants.builder.EnchantBookBuilder;
+import me.faln.chaoticenchants.enchants.impl.RunicObstructionEnchant;
 import me.faln.chaoticenchants.enchants.registry.EnchantRegistry;
 import me.faln.chaoticenchants.rarity.Rarity;
 import me.faln.chaoticenchants.utils.Color;
+import me.lucko.helper.metadata.Metadata;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -17,11 +19,22 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 public final class EnchantManager {
 
     private final ChaoticEnchants plugin;
+
+    public List<ChaoticEnchant> getEnchants(final ItemStack itemStack) {
+        final ReadableNBT nbt = NBT.readNbt(itemStack);
+        final EnchantRegistry enchantRegistry = this.plugin.getEnchantRegistry();
+
+        return enchantRegistry.keySet().stream()
+                .filter(nbt::hasTag)
+                .map(enchantRegistry::get)
+                .collect(Collectors.toList());
+    }
 
     public ItemStack increaseSuccess(final int toAdd, final ItemStack itemStack) {
         final ReadableNBT nbt = NBT.readNbt(itemStack);
@@ -64,6 +77,15 @@ public final class EnchantManager {
         });
     }
 
+    public void removeEnchant(final ItemStack item, final ChaoticEnchant enchant) {
+        NBT.modify(item, nbt -> {
+            nbt.removeKey(enchant.getId());
+            nbt.modifyMeta((readableNBT, meta) -> {
+                this.removeEnchant(item, enchant);
+            });
+        });
+    }
+
     public void removeLore(final ItemStack itemStack, final ChaoticEnchant enchant) {
         if (itemStack == null) {
             return;
@@ -77,9 +99,12 @@ public final class EnchantManager {
 
         final List<String> lore = meta.getLore();
         final List<String> newLore = new LinkedList<>();
+        final String enchantToRemove = enchant.getDisplayName()
+                .replace("%rarity-color%", enchant.getRarity().getColor())
+                .replace("&", "§");
 
         for (int i = 0; i < lore.size(); i++) {
-            if (lore.get(i).contains(enchant.getDisplayName())) {
+            if (lore.get(i).startsWith(enchantToRemove)) {
                 continue;
             }
 
@@ -117,6 +142,10 @@ public final class EnchantManager {
             return;
         }
 
+        if (Metadata.provideForEntity(player).has(RunicObstructionEnchant.SILENCED_KEY)) {
+            return;
+        }
+
         final EnchantRegistry enchantRegistry = this.plugin.getEnchantRegistry();
         final ReadableNBT nbt = NBT.readNbt(item);
 
@@ -126,6 +155,11 @@ public final class EnchantManager {
             }
 
             final ChaoticEnchant enchant = enchantRegistry.get(enchantId);
+
+            if (!enchant.isEnabled()) {
+                continue;
+            }
+
             final int enchantLevel = nbt.getInteger(enchantId);
 
             enchant.activate(player, enchantLevel);

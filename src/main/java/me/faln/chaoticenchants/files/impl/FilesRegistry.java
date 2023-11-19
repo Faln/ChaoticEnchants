@@ -25,7 +25,8 @@ public class FilesRegistry extends AbstractRegistry<String, YMLConfig> {
                 "config",
                 "infuser-menu",
                 "incinerator-menu",
-                "amount-selector-menu"
+                "amount-selector-menu",
+                "cleansing-menu"
         ).forEach(this::createFile);
     }
 

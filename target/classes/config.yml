@@ -18,3 +18,13 @@ lucky-gem:
     RARE: 10
     LEGENDARY: 3
     MYTHICAL: 2
+cleansing-wand:
+  name: '&b&lCleansing Wand'
+  custom-model-data: 0
+  material: STICK
+  lore:
+    - '&7Removes an enchantment from'
+    - '&7the selected item.'
+    - ''
+    - '&aDrag n Drop onto an item.'
+  cost: 1000

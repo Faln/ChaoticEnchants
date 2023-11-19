@@ -51,7 +51,7 @@ public final class BookUncoverListener implements TerminableModule {
                             .build();
 
                     this.plugin.getLangManager().send(player, "enchant-uncovered", new Replacer()
-                            .add("%enchant%", item.getItemMeta().getDisplayName())
+                            .add("%enchant%", book.getItemMeta().getDisplayName())
                     );
 
                     item.setAmount(item.getAmount() - 1);

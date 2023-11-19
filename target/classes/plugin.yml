@@ -1,4 +1,7 @@
 name: ChaoticEnchants
 version: '1.0.0'
 main: me.faln.chaoticenchants.ChaoticEnchants
-api-version: 1.13
+api-version: 1.20
+softdepend:
+  - ShopGUIPlus
+  - Vault

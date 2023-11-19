@@ -6,36 +6,37 @@ import me.faln.chaoticenchants.ChaoticEnchants;
 import me.faln.chaoticenchants.enchants.ChaoticEnchant;
 import me.faln.chaoticenchants.files.config.YMLConfig;
 import me.faln.chaoticenchants.utils.Color;
-import me.faln.chaoticenchants.utils.NumberUtils;
 import me.faln.chaoticenchants.utils.Replacer;
 import me.lucko.helper.item.ItemStackBuilder;
 import me.lucko.helper.menu.Gui;
 import me.lucko.helper.menu.Item;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public final class CleansingMenu extends Gui {
 
     private final ChaoticEnchants plugin;
     private final YMLConfig config;
     private final ItemStack itemStack;
-    private final ItemStack wand;
 
     public CleansingMenu(
             final ChaoticEnchants plugin,
             final Player player,
             final ItemStack itemStack,
-            final ItemStack wand,
             final YMLConfig config
     ) {
         super(player, config.parseInt("size"), config.coloredString("title"));
         this.itemStack = itemStack;
-        this.wand = wand;
         this.plugin = plugin;
         this.config = config;
     }
@@ -48,53 +49,82 @@ public final class CleansingMenu extends Gui {
         );
 
         this.setItem(this.config.parseInt("cancel.slot"), this.config.getItemstack("cancel")
-                .buildConsumer(ClickType.LEFT, event -> this.close())
+                .buildConsumer(ClickType.LEFT, event -> {
+                    super.getPlayer().getInventory().addItem(this.plugin.getCleansingWand().getItem());
+                    this.close();
+                })
         );
 
         final ReadableNBT nbt = NBT.readNbt(this.itemStack);
         final List<String> loreAddon = this.config.coloredList("enchant.lore-addon");
-        final Iterator<Item> iterator = this.plugin.getEnchantRegistry().keySet().stream()
+        final List<ItemStack> enchants = this.plugin.getEnchantRegistry().keySet().stream()
                 .filter(nbt::hasTag)
                 .map(this::toItem)
-                .iterator();
+                .collect(Collectors.toList());
+        final List<ItemStack> allEnchants = this.vanillaEnchantsToItem(this.itemStack);
+
+        allEnchants.addAll(enchants);
+
+        final Iterator<ItemStack> iterator = allEnchants.iterator();
 
         while (iterator.hasNext()) {
             try {
                 final int slot = this.getFirstEmpty();
-                final ItemStack item = iterator.next().getItemStack();
+                final ItemStack item = iterator.next();
 
                 item.getLore().addAll(loreAddon);
 
-                this.setItem(slot, Item.builder(item).build());
+                this.setItem(slot, Item.builder(item)
+                        .bind(ClickType.LEFT, event -> {
+                            final Player player = super.getPlayer();
+
+                            final String enchantId = NBT.readNbt(item).getString("enchant-id");
+                            final ChaoticEnchant enchant = this.plugin.getEnchantRegistry().get(enchantId);
+
+                            NBT.modify(this.itemStack, n -> {
+                                n.removeKey(enchantId);
+                            });
+
+                            this.plugin.getEnchantManager().removeLore(this.itemStack, enchant);
+                            this.plugin.getLangManager().send(player, "enchant-removed", new Replacer()
+                                    .add("%enchant%", item.getItemMeta().getDisplayName())
+                            );
+
+                            this.setItem(slot, ItemStackBuilder.of(Material.AIR).buildItem().build());
+                            this.close();
+                        }).build());
             } catch (IndexOutOfBoundsException e) {
                 break;
             }
         }
     }
 
-    private Item toItem(final String enchantId) {
+    private ItemStack toItem(final String enchantId) {
         final ChaoticEnchant enchant = this.plugin.getEnchantRegistry().get(enchantId);
-        return ItemStackBuilder.of(Material.BOOK)
-                .name(enchant.getDisplayName().replace("%rarity-color%", enchant.getRarity().getColor()))
+        final ItemStack item = ItemStackBuilder.of(Material.BOOK)
+                .name(Color.colorize(enchant.getDisplayName().replace("%rarity-color%", enchant.getRarity().getColor())))
                 .lore(Color.colorize(enchant.getDescription()))
-                .buildConsumer(ClickType.LEFT, event -> {
-                    final Player player = super.getPlayer();
-                    final ItemStack wand = this.plugin.getCleansingWand().getItem();
+                .build();
 
-                    if (!player.getInventory().contains(wand)) {
-                        return;
-                    }
+        NBT.modify(item, nbt -> {
+            nbt.setString("enchant-id", enchantId);
+        });
 
-                    player.getInventory().remove(wand);
+        return item;
+    }
 
-                    NBT.modify(this.itemStack, nbt -> {
-                        nbt.removeKey(enchantId);
-                    });
+    private List<ItemStack> vanillaEnchantsToItem(final ItemStack itemStack) {
+        final List<ItemStack> itemStacks = new LinkedList<>();
 
-                    this.plugin.getEnchantManager().removeLore(this.itemStack, enchant);
-                    this.plugin.getLangManager().send(player, "enchant-removed", new Replacer()
-                            .add("%enchant%", this.itemStack.getItemMeta().getDisplayName())
-                    );
-                });
+        for (final Map.Entry<Enchantment, Integer> entry : itemStack.getEnchantments().entrySet()) {
+            final String name = "&7" + entry.getKey().getKey().examinableName() + " " + entry.getValue();
+
+            itemStacks.add(ItemStackBuilder.of(Material.BOOK)
+                    .name(Color.colorize(name))
+                    .build()
+            );
+        }
+
+        return itemStacks;
     }
 }

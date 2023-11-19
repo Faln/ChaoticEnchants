@@ -97,7 +97,7 @@ public final class EnchantApplyListener implements TerminableModule {
 
                         if (!ChanceUtils.parse(destroyChance)) {
                             event.setCurrentItem(null);
-                            this.plugin.getLangManager().send(player, "destroy");
+                            this.plugin.getLangManager().send(player, "destroyed");
                             return;
                         }
 

@@ -7,6 +7,8 @@ import me.faln.chaoticenchants.commands.CommandHandler;
 import me.faln.chaoticenchants.enchants.ChaoticEnchant;
 import me.faln.chaoticenchants.enchants.manager.EnchantManager;
 import me.faln.chaoticenchants.enchants.registry.EnchantRegistry;
+import me.faln.chaoticenchants.hooks.ShopGUIHook;
+import me.faln.chaoticenchants.hooks.VaultHook;
 import me.faln.chaoticenchants.items.CleansingWand;
 import me.faln.chaoticenchants.items.LuckyGem;
 import me.faln.chaoticenchants.lang.LangManager;
@@ -32,7 +34,10 @@ public final class ChaoticEnchants extends ExtendedJavaPlugin {
     private final LangManager langManager = new LangManager(this);
 
     private final LuckyGem luckyGem = new LuckyGem(this);
-    private final CleansingWand cleansingWand = new CleansingWand();
+    private final CleansingWand cleansingWand = new CleansingWand(this);
+
+    private final VaultHook vaultHook = new VaultHook();
+    private final ShopGUIHook shopGUIHook = new ShopGUIHook(this);
 
     @Override
     public void enable() {
@@ -47,6 +52,7 @@ public final class ChaoticEnchants extends ExtendedJavaPlugin {
         this.bindModule(new EnchantApplyListener(this));
         this.bindModule(new BookUncoverListener(this));
         this.bindModule(this.luckyGem);
+        this.bindModule(this.cleansingWand);
 
         Players.forEach(player -> {
             for (final ItemStack armor : player.getInventory().getArmorContents()) {

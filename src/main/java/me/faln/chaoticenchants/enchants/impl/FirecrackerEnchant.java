@@ -1,5 +1,6 @@
 package me.faln.chaoticenchants.enchants.impl;
 
+import de.tr7zw.changeme.nbtapi.NBT;
 import jdk.internal.net.http.common.Pair;
 import lombok.NonNull;
 import me.faln.chaoticenchants.ChaoticEnchants;
@@ -14,6 +15,7 @@ import me.lucko.helper.terminable.TerminableConsumer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -71,9 +73,22 @@ public final class FirecrackerEnchant extends AbstractEnchant {
                 .filter(event -> ChanceUtils.parse(this.getChanceFromLevel((Player) event.getDamager())))
                 .handler(event -> {
                     final Player player = (Player) event.getEntity();
-                    final int enchantLevel = Metadata.provideForPlayer(player)
-                            .get(this.metadataKey)
-                            .orElseThrow(IllegalStateException::new);
+                    final Player damager = (Player) event.getDamager();
+                    final ItemStack item = damager.getInventory().getItemInMainHand();
+
+                    if (!NBT.readNbt(item).hasTag("firecracker")) {
+                        return;
+                    }
+
+                    if (this.pendingTasks.containsKey(player.getUniqueId())) {
+                        return;
+                    }
+
+                    if (!ChanceUtils.parse(this.getChanceFromNBT(item))) {
+                        return;
+                    }
+
+                    final int enchantLevel = NBT.readNbt(item).getInteger("firecracker");
 
                     this.pendingTasks.put(
                             player.getUniqueId(),

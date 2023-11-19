@@ -26,3 +26,5 @@ lucky-gem-applied:
   - '&a&l[!] &aYou have successfully applied a &lLucky Gem&a to %enchant%&a.'
 item-purchase:
   - '&a&l[!] &aYou have purchased %amount%x %item% &afor &e%exp% XP'
+enchant-removed:
+  - '&a&l[!] &aSuccessfully removed %enchant%&a enchant from the item.'

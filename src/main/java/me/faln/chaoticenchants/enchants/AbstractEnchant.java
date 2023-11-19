@@ -1,5 +1,7 @@
 package me.faln.chaoticenchants.enchants;
 
+import de.tr7zw.changeme.nbtapi.NBT;
+import de.tr7zw.changeme.nbtapi.iface.ReadableNBT;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,6 +13,7 @@ import me.lucko.helper.metadata.Metadata;
 import me.lucko.helper.metadata.MetadataKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +34,7 @@ public abstract class AbstractEnchant implements ChaoticEnchant {
     protected final double[] levels;
 
     protected final Set<EquipmentType> applicableTypes;
+    protected final String procMessage;
 
     protected AbstractEnchant(final ChaoticEnchants plugin, final ConfigurationSection section) {
         this.plugin = plugin;
@@ -42,6 +46,7 @@ public abstract class AbstractEnchant implements ChaoticEnchant {
         this.levels = this.parseLevels(section);
         this.metadataKey = MetadataKey.createIntegerKey(this.id);
         this.applicableTypes = this.parseApplicableTypes(section);
+        this.procMessage = section.contains("proc-message") ? Color.colorize(section.getString("proc-message")) : null;
     }
 
     protected double getChanceFromLevel(final Player player) {
@@ -50,6 +55,18 @@ public abstract class AbstractEnchant implements ChaoticEnchant {
                 .orElseThrow(IllegalArgumentException::new);
 
         return this.levels[level - 1];
+    }
+
+    protected double getChanceFromNBT(final ItemStack itemStack) {
+        final ReadableNBT nbt = NBT.readNbt(itemStack);
+
+        if (!nbt.hasTag(this.id)) {
+            return 0.0;
+        }
+
+        final int level = nbt.getInteger(this.id) - 1;
+
+        return this.levels[level];
     }
 
     private Set<EquipmentType> parseApplicableTypes(final ConfigurationSection section) {
