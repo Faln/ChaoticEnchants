@@ -12,6 +12,7 @@ public final class CropUtils {
     public static final Set<Material> ALL_CROPS = new HashSet<>();
 
     static {
+        CROPS.put(Material.WHEAT_SEEDS, 7);
         CROPS.put(Material.WHEAT, 7);
         CROPS.put(Material.CARROT, 7);
         CROPS.put(Material.POTATOES, 7);

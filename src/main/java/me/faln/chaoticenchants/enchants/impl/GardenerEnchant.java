@@ -8,6 +8,7 @@ import me.faln.chaoticenchants.files.config.YMLConfig;
 import me.faln.chaoticenchants.utils.CropUtils;
 import me.lucko.helper.Events;
 import me.lucko.helper.terminable.TerminableConsumer;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -24,7 +25,7 @@ public final class GardenerEnchant extends AbstractEnchant {
     @Override
     public void setup(@NonNull final TerminableConsumer consumer) {
         Events.subscribe(BlockBreakEvent.class)
-                .filter(event -> !CropUtils.CROPS.containsKey(event.getBlock().getType()))
+                .filter(event -> CropUtils.CROPS.containsKey(event.getBlock().getType()))
                 .filter(event -> NBT.readNbt(event.getPlayer().getInventory().getItemInMainHand()).hasTag("gardener"))
                 .handler(event -> {
                     final Block block = event.getBlock();
@@ -35,7 +36,7 @@ public final class GardenerEnchant extends AbstractEnchant {
 
                     final Ageable ageable = (Ageable) block.getBlockData();
 
-                    if (CropUtils.CROPS.get(block.getType()) == ageable.getAge()) {
+                    if (ageable.getMaximumAge() == ageable.getAge()) {
                         return;
                     }
 

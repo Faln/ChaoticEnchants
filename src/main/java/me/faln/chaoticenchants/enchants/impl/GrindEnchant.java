@@ -1,5 +1,6 @@
 package me.faln.chaoticenchants.enchants.impl;
 
+import de.tr7zw.changeme.nbtapi.NBT;
 import lombok.NonNull;
 import lombok.Value;
 import me.faln.chaoticenchants.ChaoticEnchants;
@@ -7,9 +8,10 @@ import me.faln.chaoticenchants.enchants.AbstractEnchant;
 import me.faln.chaoticenchants.files.config.YMLConfig;
 import me.faln.chaoticenchants.utils.ChanceUtils;
 import me.lucko.helper.Events;
-import me.lucko.helper.metadata.Metadata;
 import me.lucko.helper.terminable.TerminableConsumer;
+import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,12 +39,19 @@ public final class GrindEnchant extends AbstractEnchant {
     public void setup(@NonNull final TerminableConsumer consumer) {
         Events.subscribe(EntityDeathEvent.class)
                 .filter(event -> event.getEntity().getKiller() != null)
-                .filter(event -> Metadata.provideForPlayer(event.getEntity().getKiller()).has(this.metadataKey))
-                .filter(event -> ChanceUtils.parse(this.getChanceFromLevel(event.getEntity().getKiller())))
                 .handler(event -> {
-                    final int enchantLevel = Metadata.provideForPlayer(event.getEntity().getKiller())
-                            .get(this.metadataKey)
-                            .orElseThrow(IllegalStateException::new);
+                    final Player player = event.getEntity().getKiller();
+                    final ItemStack item = player.getInventory().getItemInMainHand();
+
+                    if (!NBT.readNbt(item).hasTag("grind")) {
+                        return;
+                    }
+
+                    if (!ChanceUtils.parse(this.getChanceFromNBT(item))) {
+                        return;
+                    }
+
+                    final int enchantLevel = NBT.readNbt(item).getInteger("grind");
 
                     event.setDroppedExp(event.getDroppedExp() + this.map.get(enchantLevel).get());
                 }).bindWith(consumer);

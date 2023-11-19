@@ -2,6 +2,7 @@ package me.faln.chaoticenchants.enchants.impl;
 
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
+import de.tr7zw.changeme.nbtapi.NBT;
 import lombok.NonNull;
 import lombok.Value;
 import me.faln.chaoticenchants.ChaoticEnchants;
@@ -33,7 +34,7 @@ public final class MidasTouchEnchant extends AbstractEnchant {
         super(plugin, config.section("midastouch"));
 
         for (final String level : config.section("midastouch.levels").getKeys(false)) {
-            final List<DropsDTO> drops = config.list("midastouch." + level + ".drops").stream()
+            final List<DropsDTO> drops = config.list("midastouch.levels." + level + ".drops").stream()
                     .map(DropsDTO::of)
                     .collect(Collectors.toList());
             final int l = Integer.parseInt(level);
@@ -45,15 +46,13 @@ public final class MidasTouchEnchant extends AbstractEnchant {
     @Override
     public void setup(@NonNull final TerminableConsumer consumer) {
         Events.subscribe(BlockBreakEvent.class)
-                .filter(event -> Metadata.provideForPlayer(event.getPlayer()).has(this.metadataKey))
-                .filter(event -> ChanceUtils.parse(this.getChanceFromLevel(event.getPlayer())))
+                .filter(event -> NBT.readNbt(event.getPlayer().getInventory().getItemInMainHand()).hasTag("midastouch"))
+                .filter(event -> ChanceUtils.parse(this.getChanceFromNBT(event.getPlayer().getInventory().getItemInMainHand())))
                 .handler(event -> {
                     final Block block = event.getBlock();
-                    final int enchantLevel = Metadata.provideForPlayer(event.getPlayer())
-                            .get(this.metadataKey)
-                            .orElseThrow(IllegalArgumentException::new);
-                    final List<DropsDTO> dtos = this.drops.get(enchantLevel);
-                    final ItemStack item = dtos.get(ThreadLocalRandom.current().nextInt(dtos.size())).getRandom();
+                    final int enchantLevel = NBT.readNbt(event.getPlayer().getInventory().getItemInMainHand()).getInteger("midastouch");
+                    final List<DropsDTO> dtos = this.drops.get(enchantLevel - 1);
+                    final ItemStack item = dtos.get(ThreadLocalRandom.current().nextInt(1, dtos.size())).getRandom();
 
                     block.getLocation().getWorld().dropItemNaturally(block.getLocation(), item);
 

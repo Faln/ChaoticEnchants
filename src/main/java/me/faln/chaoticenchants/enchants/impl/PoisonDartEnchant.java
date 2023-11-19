@@ -1,5 +1,6 @@
 package me.faln.chaoticenchants.enchants.impl;
 
+import de.tr7zw.changeme.nbtapi.NBT;
 import lombok.NonNull;
 import lombok.Value;
 import me.faln.chaoticenchants.ChaoticEnchants;
@@ -12,6 +13,7 @@ import me.lucko.helper.terminable.TerminableConsumer;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -44,14 +46,21 @@ public final class PoisonDartEnchant extends AbstractEnchant {
                 .filter(event -> event.getEntity() instanceof Arrow)
                 .filter(event -> event.getHitEntity() instanceof Player)
                 .filter(event -> event.getEntity().getShooter() instanceof Player)
-                .filter(event -> Metadata.provideForPlayer((Player) event.getEntity().getShooter()).has(this.metadataKey))
-                .filter(event -> ChanceUtils.parse(this.getChanceFromLevel((Player) event.getEntity().getShooter())))
                 .handler(event -> {
                     final Player player = (Player) event.getHitEntity();
-                    final int dartLevel = Metadata.provideForPlayer((Player) event.getEntity().getShooter())
-                            .get(this.metadataKey)
-                            .orElseThrow(IllegalStateException::new);
-                    final PoisonDartData data = this.dartData.get(dartLevel);
+                    final Player shooter = (Player) event.getEntity().getShooter();
+                    final ItemStack item = shooter.getInventory().getItemInMainHand();
+
+                    if (!NBT.readNbt(item).hasTag("poisondart")) {
+                        return;
+                    }
+
+                    if (!ChanceUtils.parse(this.getChanceFromNBT(item))) {
+                        return;
+                    }
+
+                    final int dartLevel = NBT.readNbt(item).getInteger("poisondart");
+                    final PoisonDartData data = this.dartData.get(dartLevel - 1);
 
                     player.addPotionEffect(new PotionEffect(PotionEffectType.POISON, data.duration, data.poisonLevel));
 

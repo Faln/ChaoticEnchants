@@ -24,7 +24,7 @@ public final class MealPlanningEnchant extends AbstractEnchant {
     public void setup(@NonNull final TerminableConsumer consumer) {
         Events.subscribe(FoodLevelChangeEvent.class)
                 .filter(event -> event.getEntity() instanceof Player)
-                .filter(event -> Metadata.provideForEntity(event.getEntity().getUniqueId()).has(this.metadataKey))
+                .filter(event -> Metadata.provideForPlayer(event.getEntity().getUniqueId()).has(this.metadataKey))
                 .filter(event -> ChanceUtils.parse(this.getChanceFromLevel((Player) event.getEntity())))
                 .handler(event -> {
                     if (event.getFoodLevel() != 20) {

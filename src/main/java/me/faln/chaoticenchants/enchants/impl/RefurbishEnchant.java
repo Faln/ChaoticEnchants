@@ -32,13 +32,10 @@ public final class RefurbishEnchant extends AbstractEnchant {
     public void setup(@NonNull final TerminableConsumer consumer) {
         Events.subscribe(PlayerItemBreakEvent.class)
                 .filter(event -> NBT.readNbt(event.getBrokenItem()).hasTag("refurbish"))
-                .filter(event -> Metadata.provideForPlayer(event.getPlayer()).has(this.metadataKey))
                 .handler(event -> {
                     final Player player = event.getPlayer();
                     final ItemStack item = event.getBrokenItem().clone();
-                    final int enchantLevel = Metadata.provideForPlayer(player)
-                            .get(this.metadataKey)
-                            .orElseThrow(IllegalStateException::new) - 1;
+                    final int enchantLevel = NBT.readNbt(item).getInteger("refurbish") - 1;
 
                     if (enchantLevel == 0) {
                         return;
@@ -50,14 +47,17 @@ public final class RefurbishEnchant extends AbstractEnchant {
 
                     final Damageable damageable = (Damageable) item.getItemMeta();
 
-                    damageable.setDamage(item.getType().getMaxDurability());
+                    damageable.setDamage(0);
                     item.setItemMeta(damageable);
 
                     final List<ChaoticEnchant> enchantsList = this.plugin.getEnchantManager().getEnchants(item).stream()
                             .filter(enchant -> !enchant.getId().equals(this.id))
                             .collect(Collectors.toList());
 
-                    this.plugin.getEnchantManager().removeEnchant(item, enchantsList.get(ThreadLocalRandom.current().nextInt(enchantsList.size())));
+                    if (!enchantsList.isEmpty()) {
+                        this.plugin.getEnchantManager().removeEnchant(item, enchantsList.get(ThreadLocalRandom.current().nextInt(1, enchantsList.size())));
+                    }
+
                     this.plugin.getEnchantManager().removeEnchant(item, this);
                     this.plugin.getEnchantManager().applyEnchant(item, this, enchantLevel);
 

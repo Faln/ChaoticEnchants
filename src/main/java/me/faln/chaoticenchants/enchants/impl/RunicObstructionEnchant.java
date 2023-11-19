@@ -1,5 +1,6 @@
 package me.faln.chaoticenchants.enchants.impl;
 
+import de.tr7zw.changeme.nbtapi.NBT;
 import lombok.NonNull;
 import me.faln.chaoticenchants.ChaoticEnchants;
 import me.faln.chaoticenchants.enchants.AbstractEnchant;
@@ -13,6 +14,7 @@ import me.lucko.helper.metadata.MetadataKey;
 import me.lucko.helper.terminable.TerminableConsumer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -34,10 +36,18 @@ public final class RunicObstructionEnchant extends AbstractEnchant {
         Events.subscribe(EntityDamageByEntityEvent.class)
                 .filter(event -> event.getEntity() instanceof Player)
                 .filter(event -> event.getDamager() instanceof Player)
-                .filter(event -> Metadata.provideForEntity(event.getEntity().getUniqueId()).has(this.metadataKey))
-                .filter(event -> ChanceUtils.parse(this.getChanceFromLevel((Player) event.getDamager())))
                 .handler(event -> {
                     final Player player = (Player) event.getEntity();
+                    final Player damager = (Player) event.getDamager();
+                    final ItemStack itemStack = damager.getInventory().getItemInMainHand();
+
+                    if (!NBT.readNbt(itemStack).hasTag("runicobstruction")) {
+                        return;
+                    }
+
+                    if (!ChanceUtils.parse(this.getChanceFromNBT(itemStack))) {
+                        return;
+                    }
 
                     Arrays.stream(player.getInventory().getArmorContents())
                             .forEach(item -> {

@@ -1,15 +1,16 @@
 package me.faln.chaoticenchants.enchants.impl;
 
+import de.tr7zw.changeme.nbtapi.NBT;
 import lombok.NonNull;
 import me.faln.chaoticenchants.ChaoticEnchants;
 import me.faln.chaoticenchants.enchants.AbstractEnchant;
 import me.faln.chaoticenchants.files.config.YMLConfig;
 import me.faln.chaoticenchants.utils.ChanceUtils;
 import me.lucko.helper.Events;
-import me.lucko.helper.metadata.Metadata;
 import me.lucko.helper.terminable.TerminableConsumer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,13 +34,19 @@ public final class WellFedEnchant extends AbstractEnchant {
     public void setup(@NonNull final TerminableConsumer consumer) {
         Events.subscribe(EntityDamageByEntityEvent.class)
                 .filter(event -> event.getDamager() instanceof Player)
-                .filter(event -> Metadata.provideForEntity(event.getDamager().getUniqueId()).has(this.metadataKey))
-                .filter(event -> ChanceUtils.parse(this.getChanceFromLevel((Player) event.getDamager())))
                 .handler(event -> {
-                    final int enchantLevel = Metadata.provideForEntity(event.getDamager().getUniqueId())
-                            .get(this.metadataKey)
-                            .orElseThrow(IllegalStateException::new);
                     final Player player = (Player) event.getDamager();
+                    final ItemStack item = player.getInventory().getItemInMainHand();
+
+                    if (!NBT.readNbt(item).hasTag("wellfed")) {
+                        return;
+                    }
+
+                    if (!ChanceUtils.parse(this.getChanceFromNBT(item))) {
+                        return;
+                    }
+
+                    final int enchantLevel = NBT.readNbt(item).getInteger("wellfed");
 
                     player.setFoodLevel((int) Math.min(player.getFoodLevel(), this.feedAmount.get(enchantLevel)));
 

@@ -367,7 +367,7 @@ fireforged:
 gardener:
   enabled: true
   rarity: LEGENDARY
-  name: '%rarity-color%Fire Forged'
+  name: '%rarity-color%Gardener'
   description:
     - '&7Prevents you from harvesting crops'
     - '&7that arent fully grown yet.'

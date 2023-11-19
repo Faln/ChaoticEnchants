@@ -1,12 +1,12 @@
 package me.faln.chaoticenchants.enchants.impl;
 
+import de.tr7zw.changeme.nbtapi.NBT;
 import lombok.NonNull;
 import me.faln.chaoticenchants.ChaoticEnchants;
 import me.faln.chaoticenchants.enchants.AbstractEnchant;
 import me.faln.chaoticenchants.files.config.YMLConfig;
 import me.faln.chaoticenchants.utils.ChanceUtils;
 import me.lucko.helper.Events;
-import me.lucko.helper.metadata.Metadata;
 import me.lucko.helper.terminable.TerminableConsumer;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -23,8 +23,8 @@ public final class TelekinesisEnchant  extends AbstractEnchant {
     @Override
     public void setup(@NonNull final TerminableConsumer consumer) {
         Events.subscribe(BlockBreakEvent.class)
-                .filter(event -> Metadata.provideForPlayer(event.getPlayer()).has(this.metadataKey))
-                .filter(event -> ChanceUtils.parse(this.getChanceFromLevel(event.getPlayer())))
+                .filter(event -> NBT.readNbt(event.getPlayer().getInventory().getItemInMainHand()).hasTag("telekinesis"))
+                .filter(event -> ChanceUtils.parse(this.getChanceFromNBT(event.getPlayer().getInventory().getItemInMainHand())))
                 .handler(event -> {
                     final Player player = event.getPlayer();
                     final Block block = event.getBlock();

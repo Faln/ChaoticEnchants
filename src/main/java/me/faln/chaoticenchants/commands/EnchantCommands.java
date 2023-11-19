@@ -6,6 +6,8 @@ import cloud.commandframework.annotations.CommandMethod;
 import cloud.commandframework.annotations.CommandPermission;
 import cloud.commandframework.annotations.suggestions.Suggestions;
 import cloud.commandframework.context.CommandContext;
+import de.tr7zw.changeme.nbtapi.NBT;
+import de.tr7zw.changeme.nbtapi.iface.ReadableNBT;
 import lombok.NonNull;
 import me.faln.chaoticenchants.ChaoticEnchants;
 import me.faln.chaoticenchants.enchants.ChaoticEnchant;
@@ -43,6 +45,33 @@ public final class EnchantCommands {
         }
 
         new InfuserMenu(this.plugin, (Player) sender, this.plugin.getFilesRegistry().get("infuser-menu")).open();
+    }
+
+    @CommandMethod("infuser unenchant <enchant-id>")
+    @CommandPermission("chaoticenchants.admin")
+    @CommandDescription("Removes an enchant in hand")
+    private void enchant(
+            @NonNull final CommandSender sender,
+            @Argument(value = "enchant-id", suggestions = "enchants") @NonNull final String enchantId
+    ) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(Color.colorize("&c&l[!] &cPlayer only"));
+            return;
+        }
+
+        final Player player = (Player) sender;
+        final ItemStack item = player.getInventory().getItemInMainHand();
+        final ReadableNBT nbt = NBT.readNbt(item);
+
+        if (!nbt.hasTag(enchantId)) {
+            sender.sendMessage(Color.colorize("&c&l[!] &cEnchant not found"));
+            return;
+        }
+
+        final ChaoticEnchant enchant = this.plugin.getEnchantRegistry().get(enchantId);
+
+        this.plugin.getEnchantManager().removeEnchant(item, enchant);
+
     }
 
     @CommandMethod("infuser enchant <enchant-id> <level>")

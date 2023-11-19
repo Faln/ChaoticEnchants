@@ -11,6 +11,7 @@ import me.faln.chaoticenchants.enchants.registry.EnchantRegistry;
 import me.faln.chaoticenchants.rarity.Rarity;
 import me.faln.chaoticenchants.utils.Color;
 import me.lucko.helper.metadata.Metadata;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -80,10 +81,9 @@ public final class EnchantManager {
     public void removeEnchant(final ItemStack item, final ChaoticEnchant enchant) {
         NBT.modify(item, nbt -> {
             nbt.removeKey(enchant.getId());
-            nbt.modifyMeta((readableNBT, meta) -> {
-                this.removeEnchant(item, enchant);
-            });
         });
+
+        this.removeLore(item, enchant);
     }
 
     public void removeLore(final ItemStack itemStack, final ChaoticEnchant enchant) {
@@ -98,7 +98,7 @@ public final class EnchantManager {
         }
 
         final List<String> lore = meta.getLore();
-        final List<String> newLore = new LinkedList<>();
+        final List<String> newLore = new ArrayList<>();
         final String enchantToRemove = enchant.getDisplayName()
                 .replace("%rarity-color%", enchant.getRarity().getColor())
                 .replace("&", "§");
@@ -111,8 +111,14 @@ public final class EnchantManager {
             newLore.add(lore.get(i));
         }
 
-        meta.setLore(newLore);
+        if (newLore.isEmpty()) {
+            meta.setLore(null);
+        } else {
+            meta.setLore(newLore);
+        }
+
         itemStack.setItemMeta(meta);
+
     }
 
     public void transformLore(final ItemMeta meta, final ChaoticEnchant enchant, final int level) {
