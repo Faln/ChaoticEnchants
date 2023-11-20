@@ -14,13 +14,13 @@ import me.faln.chaoticenchants.items.LuckyGem;
 import me.faln.chaoticenchants.lang.LangManager;
 import me.faln.chaoticenchants.listeners.ArmorEquipListener;
 import me.faln.chaoticenchants.listeners.BookUncoverListener;
+import me.faln.chaoticenchants.listeners.ConnectionListener;
 import me.faln.chaoticenchants.listeners.EnchantApplyListener;
 import me.faln.chaoticenchants.rarity.RarityRegistry;
 import me.faln.chaoticenchants.files.impl.FilesRegistry;
 import me.faln.chaoticenchants.utils.ArmorListener;
 import me.lucko.helper.plugin.ExtendedJavaPlugin;
 import me.lucko.helper.utils.Players;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 
@@ -51,14 +51,11 @@ public final class ChaoticEnchants extends ExtendedJavaPlugin {
         this.bindModule(new ArmorEquipListener(this));
         this.bindModule(new EnchantApplyListener(this));
         this.bindModule(new BookUncoverListener(this));
+        this.bindModule(new ConnectionListener(this));
         this.bindModule(this.luckyGem);
         this.bindModule(this.cleansingWand);
 
-        Players.forEach(player -> {
-            for (final ItemStack armor : player.getInventory().getArmorContents()) {
-                this.enchantManager.activateEnchants(armor, player);
-            }
-        });
+        Players.forEach(this.enchantManager::activateEnchants);
 
     }
 

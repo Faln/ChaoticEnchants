@@ -111,9 +111,21 @@ public final class EnchantCommands {
 
     }
 
+    @CommandMethod("infuser giveUnidentifiedBook <player> <rarity> <amount>")
+    @CommandPermission("chaoticenchants.admin")
+    @CommandDescription("Gives unidentified enchantment book")
+    private void giveUnidentifiedBook(
+            @NonNull final CommandSender sender,
+            @Argument("player") @NonNull final Player player,
+            @Argument(value = "rarity", suggestions = "rarity") @NonNull final String rarityId,
+            @Argument("amount") final int amount
+    ) {
+        
+    }
+
     @CommandMethod("infuser giveBook <player> <enchant-id> <level> <success> <failure> <destroy> <amount>")
     @CommandPermission("chaoticenchants.admin")
-    @CommandDescription("Gives a enchantment book")
+    @CommandDescription("Gives enchantment book")
     private void giveBook(
             @NonNull final CommandSender sender,
             @Argument("player") @NonNull final Player player,
@@ -145,5 +157,10 @@ public final class EnchantCommands {
     @Suggestions("enchants")
     public List<String> enchantSuggestions(final CommandContext<CommandSender> sender, final String input) {
         return new ArrayList<>(this.plugin.getEnchantRegistry().keySet());
+    }
+
+    @Suggestions("rarity")
+    public List<String> raritySuggestions(final CommandContext<CommandSender> sender, final String input) {
+        return new ArrayList<>(this.plugin.getRarityRegistry().keySet());
     }
 }

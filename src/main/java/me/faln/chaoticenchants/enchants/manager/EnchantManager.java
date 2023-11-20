@@ -18,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -140,6 +141,10 @@ public final class EnchantManager {
 
         lore.add(loreAttachment);
         meta.setLore(lore);
+    }
+
+    public void activateEnchants(final Player player) {
+        Arrays.stream(player.getInventory().getArmorContents()).forEach(item -> this.activateEnchants(item, player));
     }
 
     public void activateEnchants(final ItemStack item, final Player player) {
